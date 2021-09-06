@@ -1,0 +1,284 @@
+{% extends "bootstrap/base.html" %}
+{% block scripts %}
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
+        <script src="static/js/inference.js"></script>
+{{super()}}
+{% endblock %}
+{% block title %}Celdas Defectuosas{% endblock %}
+
+{% include "layout.html" %}
+
+{% block content %}
+<div class="content">
+    <h2>Carpeta: {{name_dir}}&nbsp; &nbsp;&nbsp;Imagen: {{name_image}}
+    <a style="float: right;" href="{{ url_for('index') }}" class="btn btn-primary">Volver</a>
+    </h2>
+    <div>
+        <div>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ModalFallas">Ver Descripci&oacute;n de Fallas</button>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ModalSeguridad">Ver Categor&iacute;as de Seguridad</button>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ModelaPotencia">Ver Categor&iacute;as de P&eacute;rdida de Potencia</button>
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ModalDependencias">Ver Dependencias de P&eacute;rdida de Potencia</button>
+        </div><br>
+        <img src="data:image/jpg;base64,{{img|safe}}">
+        <table class="table table-bordered" style="float: right;width: 40%;">
+          <thead>
+            <tr>
+              <th scope="col">Id</th>
+              <th scope="col">Falla</th>
+              <th scope="col">Latitud</th>
+              <th scope="col">Longitud</th>
+              <th scope="col">Prob</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in data_table %}
+            <tr>
+              <th scope="row">{{ a[0] }}</th>
+              <td>{{ a[1].capitalize()  }}</td>
+              <td>{{ a[2] }}</td>
+              <td>{{ a[3] }}</td>
+              <td>{{ a[4] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+    </div>
+ </div>
+<!-- Modal fallas -->
+<div class="modal fade" id="ModalFallas" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="width: 80%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Descripci&oacute;n de Fallas</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Id</th>
+              <th scope="col">Falla</th>
+              <th scope="col">Posible Motivo</th>
+              <th scope="col">Mediciones El&eacute;ctricas</th>
+              <th scope="col">Observaciones</th>
+              <th scope="col">Seguridad</th>
+              <th scope="col">Energ&iacute;a</th>
+            </tr>
+          </thead>
+          <tbody>
+              <tr>
+                <th scope="row">Panel</th>
+                <td>Un m&oacute;dulo m&aacute;s caliente que otros</td>
+                <td>El m&oacute;dulo est&aacute; en circuito abierto, no Conectado al sistema</td>
+                <td>M&oacute;dulo normalmente funciona completamente</td>
+                <td>Compruebe el cableado del sistema</td>
+                <td>A</td>
+                <td>Fallo de Sistema</td>
+              </tr>
+              <tr>
+                <th scope="row">Filas</th>
+                <td>Una o mas filas (subcadena) es m&aacute;s c&aacute;lida que otras filas en el m&oacute;dulo</td>
+                <td>Cortocircuito (SC) o subcadena abierta. Diodo de derivaci&oacute;n SC. SC interno</td>
+                <td>Potencia de subcadenas perdido, reducci&oacute;n de voltaje de circuito abierto (Voc)</td>
+                <td>Puede haber quemado un punto en el m&oacute;dulo. Un diodo desviado</td>
+                <td>B(f)</td>
+                <td>Constante o <u>E</u></td>
+              </tr>
+              <tr>
+                <th scope="row">Multiples celdas</th>
+                <td>Las celdas individuales son m&aacute;s c&aacute;lidas, no se reconoce ning&uacute;n patr&oacute;n (patr&oacute;n de mosaico)</td>
+                <td>Todo el m&oacute;dulo esta con cortocircuito. Todos los diodos de derivaci&oacute;n SC, o Conexi&oacute;n incorrecta</td>
+                <td>Potencia del m&oacute;dulo dr&aacute;sticamente reducido, (casi cero) fuerte reducci&oacute;n de voltaje de circuito abierto Voc</td>
+                <td>Revise el cableado. Todos los diodos desviados</td>
+                <td>A cuando existe SC, B(f) cuando los diodos SC</td>
+                <td>Constante o <u>E</u></td>
+              </tr>
+              <tr>
+                <th scope="row">Celda</th>
+                <td>Una celda claramente m&aacute;s c&aacute;lida que el resto</td>
+                <td>Efectos de sombreado, Celda defectuosa, o Celda deslaminada</td>
+                <td>Disminuci&oacute;n de potencia, no es necesariamente permanente</td>
+                <td>Se necesita inspecci&oacute;n visual, limpieza (desajuste de celda) o celda desviada</td>
+                <td>A, B(f)</td>
+                <td><u>A</u>, <u>B</u>, o <u>C</u>(m, tc, h)</td>
+              </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal seguridad -->
+<div class="modal fade" id="ModalSeguridad" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="width: 80%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Categor&iacute;as de Seguridad</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Categor&iacute;a de seguridad</th>
+              <th scope="col">Descripci&oacute;n</th>
+            </tr>
+          </thead>
+          <tbody>
+              <tr>
+                <td>A</td>
+                <td>La falla no tiene ning&uacute;n efecto sobre la seguridad</td>
+              </tr>
+              <tr>
+                <td>B(f,e,m)</td>
+                <td>La falla puede causar un incendio (f), la falla puede causar una descarga el&eacute;ctrica (e), la falla puede causar un peligro f&iacute;sico (m), si ocurre una falla de seguimiento y / o una segunda falla.</td>
+              </tr>
+              <tr>
+                <td>C(f,e,m)</td>
+                <td>La falla causa un problema de seguridad directo (definici&oacute;n de f, e, m ver B).</td>
+              </tr>
+          </tbody>
+        </table>
+        <div>
+          [IEC 61730-1] Comisi&oacute;n Electrot&eacute;cnica Internacional (IEC) 61730-1: Calificaci&oacute;n de seguridad del m&oacute;dulo fotovoltaico (PV) - Parte 1: Requisitos para la construcci&oacute;n, 2004-10-14
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal potencia -->
+<div class="modal fade" id="ModelaPotencia" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="width: 80%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Categor&iacute;as de P&eacute;rdida de Potencia</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Categor&iacute;a de p&eacute;rdida de potencia</th>
+              <th scope="col">Descripci&oacute;n</th>
+            </tr>
+          </thead>
+          <tbody>
+              <tr>
+                <td><u>A</u></td>
+                <td>P&eacute;rdida de energ&iacute;a por debajo del l&iacute;mite de detecci&oacute;n <3%.</td>
+              </tr>
+              <tr>
+                <td><u>B</u></td>
+                <td>Degradaci&oacute;n de la p&eacute;rdida de potencia de forma exponencial a lo largo del tiempo.</td>
+              </tr>
+              <tr>
+                <td><u>C</u></td>
+                <td>Degradaci&oacute;n de la p&eacute;rdida de potencia de forma lineal con el tiempo.</td>
+              </tr>
+              <tr>
+                <td><u>D</u></td>
+                <td>La degradaci&oacute;n de la p&eacute;rdida de energ&iacute;a se satura con el tiempo.</td>
+              </tr>
+              <tr>
+                <td><u>E</u></td>
+                <td>Degradaci&oacute;n en pasos a lo largo del tiempo.</td>
+              </tr>
+              <tr>
+                <td><u>F</u></td>
+                <td>Diversos tipos de degradaci&oacute;n a lo largo del tiempo.</td>
+              </tr>
+          </tbody>
+        </table>
+        <div>
+          [IEC 60904] Comisi&oacute;n Electrot&eacute;cnica Internacional (IEC) 60904: Dispositivos fotovoltaicos, 2006<br>
+          [IEC 61853-1] Comisi&oacute;n Electrot&eacute;cnica Internacional (IEC) 61853-1: Prueba de rendimiento del m&oacute;dulo fotovoltaico (PV) y clasificaci&oacute;n energ&eacute;tica - Parte 1: Mediciones de rendimiento de irradiancia y temperatura y clasificaci&oacute;n de potencia, 2011
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal seguridad -->
+<div class="modal fade" id="ModalDependencias" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="width: 80%;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Categor&iacute;as de Seguridad</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Ap&eacute;ndice</th>
+              <th scope="col">La p&eacute;rdida de potencia aumenta con</th>
+            </tr>
+          </thead>
+          <tbody>
+              <tr>
+                <td>t</td>
+                <td>Temperatura</td>
+              </tr>
+              <tr>
+                <td>v</td>
+                <td>Voltaje</td>
+              </tr>
+              <tr>
+                <td>i</td>
+                <td>Corriente</td>
+              </tr>
+              <tr>
+                <td>h</td>
+                <td>Humedad</td>
+              </tr>
+              <tr>
+                <td>m</td>
+                <td>Carga Mec&aacute;nica</td>
+              </tr>
+              <tr>
+                <td>u</td>
+                <td>Irradiaci&oacute;n ultravioleta</td>
+              </tr>
+              <tr>
+                <td>tc</td>
+                <td>Ciclos t&eacute;rmicos</td>
+              </tr>
+              <tr>
+                <td>s</td>
+                <td>Sombreado</td>
+              </tr>
+          </tbody>
+        </table>
+        <div>
+          [IEC 60904] Comisi&oacute;n Electrot&eacute;cnica Internacional (IEC) 60904: Dispositivos fotovoltaicos, 2006<br>
+          [IEC 61853-1] Comisi&oacute;n Electrot&eacute;cnica Internacional (IEC) 61853-1: Prueba de rendimiento del m&oacute;dulo fotovoltaico (PV) y clasificaci&oacute;n energ&eacute;tica - Parte 1: Mediciones de rendimiento de irradiancia y temperatura y clasificaci&oacute;n de potencia, 2011
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

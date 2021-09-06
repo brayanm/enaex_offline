@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+{% block title %}Predecir{% endblock %}
+
+{% block content %}
+<h2>Predecir Fallas en Paneles Fotovoltaicos</h2>
+<div>
+    <p>Seleccionar Carpetas (imagenes nuevas)</p>
+    <select class="form-control" id="select_dir" style="width: 330px;" multiple>
+        {% for dir in list_dir %}
+            <option value="{{dir}}">{{dir}}</option>
+        {% endfor %}
+    </select>
+    <p>Ingresar Nombre de archivo csv a exportar</p>
+    <input type="text" id="archivo" name="archivo" required="required"><br><br>
+    <p>Ingresar Nombre Tabla de Base de Datos</p>
+    <input type="text" id="namedb" name="namedb" required="required"><br><br>
+    <button type="button" class="btn btn-info add-new" id="go_inference"> Aplicar Modelo</button>
+    <div id="msg"></div>
+</div>
+{% endblock %}

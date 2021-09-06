@@ -1,0 +1,14 @@
+@page{
+	size: 29.7cm 21.0cm;
+}
+
+.tabla_grande{
+	font-size: 24px;
+}
+
+.titulo-text{
+	font-size: 20px;
+	font-weight: bolder;
+}
+
+.pb { page-break-before: always; }

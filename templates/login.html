@@ -1,0 +1,27 @@
+<head>
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<div class="login">
+		<h1>Inicio de Sesión</h1>
+		<div class="links">
+			<a href="{{ url_for('login') }}" class="active">Ingresar</a>
+		</div>
+		<form action="{{ url_for('login') }}" method="post">
+			<label for="username">
+				<i class="fas fa-user"></i>
+			</label>
+			<input type="text" name="username" placeholder="Usuario" id="username" required>
+			<label for="password">
+				<i class="fas fa-lock"></i>
+			</label>
+			<input type="password" name="password" placeholder="Contraseña" id="password" required>
+			<div class="msg">{{ msg }}</div>
+			<input type="submit" value="Ingresar">
+		</form>
+	</div>
+</body>

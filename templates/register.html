@@ -1,0 +1,39 @@
+{% extends "bootstrap/base.html" %}
+{% block styles %}
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
+{{super()}}
+{% endblock %}
+{% block title %}Celdas Defectuosas{% endblock %}
+
+{% block content %}
+<div id="content_img">
+     <img style="width: 10%;height: auto;margin-top: 0px;" src="{{url_for('static', filename='hstore_DJI_gris-01.png')}}" />
+     <img style="width: 10%;height: auto;margin-top: 0px;" src="{{url_for('static', filename='solargroupv2.png')}}" />
+</div>
+	<body>
+		<div class="register">
+			<h1>Registrarse</h1>
+			<div class="links">
+				<a href="{{ url_for('login') }}">Ingresar</a>
+				<a href="{{ url_for('register') }}" class="active">Registrarse</a>
+			</div>
+			<form action="{{ url_for('register') }}" method="post" autocomplete="off">
+				<label for="username">
+					<i class="fas fa-user"></i>
+				</label>
+				<input type="text" name="username" placeholder="Usuario" id="username" required>
+				<label for="password">
+					<i class="fas fa-lock"></i>
+				</label>
+				<input type="password" name="password" placeholder="Contraseña" id="password" required>
+				<label for="email">
+					<i class="fas fa-envelope"></i>
+				</label>
+				<input type="email" name="email" placeholder="Email" id="email" required>
+				<div class="msg">{{ msg }}</div>
+				<input type="submit" value="Registrarse">
+			</form>
+		</div>
+	</body>
+{% endblock %}

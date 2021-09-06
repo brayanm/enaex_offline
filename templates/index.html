@@ -1,0 +1,282 @@
+<html>
+<head>
+    <title>Eanex Busqueda Balizas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/MarkerCluster.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/MarkerCluster.Default.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/plotly-latest.min.js') }}"></script>
+
+    <style>
+        #map {
+          width: 50%; 
+          height: 500px; 
+          border: 1px solid #ccc;
+        }
+        #plotlyChart {
+          width: 65%; 
+          height: 600px; 
+          border: 1px solid #ccc;
+        }
+        .mycluster1 {
+          width: 40px;
+          height: 40px;
+          background-color: rgba(150, 0, 0, 0.9);
+          text-align: center;
+          font-size: 24px;
+          border-radius: 20px;
+        }
+
+        .mycluster2 {
+          width: 40px;
+          height: 40px;
+          background-color: rgba(236, 89, 64, 0.9);
+          text-align: center;
+          font-size: 24px;
+          border-radius: 20px;
+        }
+        .mycluster3 {
+          width: 40px;
+          height: 40px;
+          background-color: rgba(240, 141, 96, 0.9);
+          text-align: center;
+          font-size: 24px;
+          border-radius: 20px;
+        }
+        .mycluster4 {
+          width: 40px;
+          height: 40px;
+          background-color: rgba(220, 208, 80, 0.9);
+          text-align: center;
+          font-size: 24px;
+          border-radius: 20px;
+        }
+
+        .mycluster5 {
+          width: 40px;
+          height: 40px;
+          background-color: rgba(146, 208, 80, 0.9);
+          text-align: center;
+          font-size: 24px;
+          border-radius: 20px;
+        }
+      .info {
+          padding: 6px 8px;
+          font: 14px/16px Arial, Helvetica, sans-serif;
+          background: white;
+          background: rgba(255,255,255,0.8);
+          box-shadow: 0 0 15px rgba(0,0,0,0.2);
+          border-radius: 5px;
+      }
+      .info h4 {
+          margin: 0 0 5px;
+          color: #777;
+      }
+      .legend {
+          line-height: 20px;
+          color: #555;
+      }
+      .legend i {
+          width: 18px;
+          height: 18px;
+          float: left;
+          margin-right: 8px;
+          opacity: 0.7;
+      }
+      .content {
+        max-width: 1350px;
+        margin: auto;
+        background: white;
+        padding: 0px;
+      }
+      .panel1 {
+        width: 30%;
+        float: right;
+        margin-top: -620px;
+      }
+      #alert_error{
+        color: #dc3545;
+      }
+    </style>
+</head>
+<body>
+  <div class="container" style="max-width: 1366px;">
+    <div class="row" style="margin-right: 0;margin-left: 0;">
+      <div class="alert alert-primary" role="alert" style="width: 300px;float: left;" id="log">
+      </div>
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-danger" style="margin-top: 5px;float: right;margin-right: 5px;" onclick="end_capturar();func_stop_data();">
+        Finalizar Captura
+      </button>
+      <button type="button" class="btn btn-success" style="margin-top: 5px;float: right;margin-right: 5px;" id="connect_drone">
+        Reconectar
+      </button>
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-primary" data-toggle="modal" onclick="show_modal()" style="margin-top: 5px;float: right;margin-right: 5px;">
+        Ingresar Datos
+      </button>
+      <button type="button" class="btn btn-warning" onclick="relocate_report()" style="margin-top: 5px;float: right;margin-right: 5px;">
+        Ver Reportes
+      </button>
+    </div>
+    <div id="plotlyChart"></div>
+
+    <div class="panel1">
+      <div class="row">
+      <div class="card bg-light mb-3" style="width: 27rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Baliza en B&uacute;squeda</h5>
+          {% if namedb==None: %}
+          <input id="f_name_baliza" class="form-control" type="text" style="width: 100%;float: left;margin-bottom: 10px;margin-right: 5px;" readonly>
+          {% else %}
+          <input id="f_name_baliza" class="form-control" type="text" value="{{namedb}}" style="width: 100%;float: left;margin-bottom: 10px;margin-right: 5px;" readonly>
+          {% endif %}
+        </div>
+      </div>
+        <div class="card bg-light mb-3" style="width: 14rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Radio Amplitud</h5>
+          {% if radio2==None: %}
+          <input id="radio2" class="form-control" type="number" value="2" style="width: 70%;float: left;margin-bottom: 10px;margin-right: 5px;"><p style="float: left;margin-top: 5px;font-size:70%;"><b>dB</b></p>
+          {% else %}
+          <input id="radio2" class="form-control" type="number" value="{{radio2}}" style="width: 70%;float: left;margin-bottom: 10px;margin-right: 5px;"><p style="float: left;margin-top: 5px;font-size:70%;"><b>dB</b></p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+      <div class="row">
+        <div class="card bg-light mb-3" style="width: 41rem;border: 1px solid #ccc!important;padding: 0.2em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Nivel M&aacute;ximo Intensidad</h5>
+          <input  style="width: 100%;" type="range" min="0" max='120' value="90" step="0.1" id="slideramp" >
+          <input class="form-control" type="number" id="currentValue" value="-90" step="0.1" style="width: 50%;">
+        </div>
+      </div>
+      </div>
+      <div class="row">
+      <div class="card bg-light mb-3" style="width: 24rem;border: 1px solid #ccc!important;padding: 0.2em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Frecuencia Detectada</h5>
+          <select class="form-control" aria-label="Default select example" id="frecuencia_d2">
+            <option value="12_7">12.7</option>
+            <option value="14">14</option>
+            <option value="14_25">14.25</option>
+            <option value="all" selected>Todas</option>
+          </select>
+        </div>
+      </div>
+      </div>
+      <div class="row">
+      <div class="card bg-light mb-3" style="width: 12rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Frecuencia M&aacute;xima</h5>
+          <p id="id_p_frecuencia" class="card-text" style="font-size:120%;"><b>-.-</b></p>
+        </div>
+      </div>
+      <div class="card bg-light mb-3" style="width: 12rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Intensidad Actual</h5>
+          <p id="id_p_intensidad" class="card-text" style="font-size:120%;"><b>-.-</b></p>
+        </div>
+      </div>
+      <div class="card bg-light mb-3" style="width: 17rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Coordenadas Actuales</h5>
+          <p id="id_p_coordenadas" class="card-text" style="font-size:90%;"><b>-.-</b></p>
+        </div>
+      </div>
+      </div>
+      <div class="row">
+      <div class="card bg-light mb-3" style="width: 12rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Velocidad</h5>
+          <p id="id_p_vel" class="card-text" style="font-size:120%;"><b>-.-</b></p>
+        </div>
+      </div>
+      <div class="card bg-light mb-3" style="width: 12rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Alt&iacute;metro</h5>
+          <p id="id_p_alt" class="card-text" style="font-size:120%;"><b>-.-</b></p>
+        </div>
+      </div>
+      <div class="card bg-light mb-3" style="width: 17rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Altitud Nivel Mar</h5>
+          <p id="id_p_asl" class="card-text" style="font-size:120%;"><b>-.-</b></p>
+        </div>
+      </div>
+      </div>
+      <div class="row">
+      <div class="card bg-light mb-3" style="width: 12rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Intensidad 12.7 Khz</h5>
+          <p id="amp_12_7" class="card-text" style="font-size:120%;"><b>-.-</b></p>
+        </div>
+      </div>
+      <div class="card bg-light mb-3" style="width: 12rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Intensidad 14 Khz</h5>
+          <p id="amp_14" class="card-text" style="font-size:120%;"><b>-.-</b></p>
+        </div>
+      </div>
+      <div class="card bg-light mb-3" style="width: 17rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Intensidad 14.25 Khz</h5>
+          <p id="amp_14_25" class="card-text" style="font-size:120%;"><b>-.-</b></p>
+        </div>
+      </div>
+      </div>
+      <!---<img style="width: 110%;" id="chart" src="data:image/png;base64, {{ plot_url }}">-->
+      <!---<img src="{{ url_for('graph_feed') }}">-->
+    </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Ingresar Datos</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="formGroupExampleInput">Baliza en B&uacute;squeda</label>
+              <input type="text" class="form-control" id="formGroupExampleInput">
+            </div>
+            <!--
+            <div class="form-group">
+              <label for="formGroupExampleInput2">Frecuencia Detectada (KHz)</label>
+              <input type="number" class="form-control" id="formGroupExampleInput2">
+            </div>
+            <div class="form-group">
+              <label for="formGroupExampleInput4">Radio Frecuencia Detectada (KHz)</label>
+              <input type="number" class="form-control" id="formGroupExampleInput4">
+            </div>
+            <div class="form-group">
+              <label for="formGroupExampleInput3">Nivel M&iacute;nimo Intensidad (dB)</label>
+              <input type="number" class="form-control" id="formGroupExampleInput3">
+            </div>
+          </div>-->
+          <div class="modal-footer">
+            <p id="alert_error"></p>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="button" class="btn btn-primary" id="capture_data">Guardar Cambios</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <script src="{{ url_for('static', filename='js/leaflet-src.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/leaflet.markercluster-src.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/leaflet.featuregroup.subgroup.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/leaflet-realtime.js') }}"></script>
+    <!--<script src="{{ url_for('static', filename='js/real_time_cluster.js') }}"></script>-->
+    <script src="{{ url_for('static', filename='js/inference.js') }}"></script>
+</body>
+</html>

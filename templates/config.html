@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+{% block title %}Configurar{% endblock %}
+
+{% block content %}
+<h2>Configurar</h2>
+<div>
+    <p>Seleccionar Tabla Mapa Inicio</p>
+    <select class="form-control" id="select_table" style="width: 330px;">
+        {% for t in list_tables %}
+            <option value="{{t[0]}}">{{t[0]}}</option>
+        {% endfor %}
+    </select>
+    <p>Ingresar Fecha Ultima Actualización Formato(dd-mm-yyyy)</p>
+    <input type="text" id="date" name="date" required="required"><br><br>
+    <button type="button" class="btn btn-info add-new" id="change_config"> Actualizar</button>
+    <div id="msg"></div>
+</div>
+{% endblock %}

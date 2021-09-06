@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Enaex Reportes Balizas</title>
+
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.css') }}">
+	<script src="{{ url_for('static', filename='js/leaflet-src.js') }}"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="static/js/leaflet-realtime.js"></script>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/screen.css') }}">
+
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/MarkerCluster.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/MarkerCluster.Default.css') }}">
+	<script src="{{ url_for('static', filename='js/leaflet.markercluster-src.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/plotly-latest.min.js') }}"></script>
+    <style>
+        #map {
+          width: 60%; 
+          height: 600px; 
+          border: 1px solid #ccc;
+        }
+        #plotlyChart {
+          width: 65%; 
+          height: 600px; 
+          border: 1px solid #ccc;
+        }
+        .form_top1{
+        	width: 150px;
+        	float: left;
+        	margin-left: 25px;
+        	margin-top: 5px;
+        }
+        .form_top2{
+        	width: 200px;
+        	float: left;
+        	margin-left: 5px;
+        	margin-top: 5px;
+        }
+        .mycluster1 {
+			width: 40px;
+			height: 40px;
+			background-color: rgba(150, 0, 0, 0.9);
+			text-align: center;
+			font-size: 24px;
+			border-radius: 20px;
+		}
+
+        .mycluster2 {
+			width: 40px;
+			height: 40px;
+			background-color: rgba(236, 89, 64, 0.9);
+			text-align: center;
+			font-size: 24px;
+			border-radius: 20px;
+		}
+        .mycluster3 {
+			width: 40px;
+			height: 40px;
+			background-color: rgba(240, 141, 96, 0.9);
+			text-align: center;
+			font-size: 24px;
+			border-radius: 20px;
+		}
+        .mycluster4 {
+			width: 40px;
+			height: 40px;
+			background-color: rgba(220, 208, 80, 0.9);
+			text-align: center;
+			font-size: 24px;
+			border-radius: 20px;
+		}
+
+        .mycluster5 {
+			width: 40px;
+			height: 40px;
+			background-color: rgba(146, 208, 80, 0.9);
+			text-align: center;
+			font-size: 24px;
+			border-radius: 20px;
+		}
+		.info {
+		    padding: 6px 8px;
+		    font: 14px/16px Arial, Helvetica, sans-serif;
+		    background: white;
+		    background: rgba(255,255,255,0.8);
+		    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+		    border-radius: 5px;
+		}
+		.info h4 {
+		    margin: 0 0 5px;
+		    color: #777;
+		}
+		.legend {
+		    line-height: 20px;
+		    color: #555;
+		}
+		.legend i {
+		    width: 18px;
+		    height: 18px;
+		    float: left;
+		    margin-right: 8px;
+		    opacity: 0.7;
+		}
+      .content {
+        max-width: 1024px;
+        margin: auto;
+        background: white;
+        padding: 0px;
+      }
+      #alert_error{
+        color: #dc3545;
+      }
+      #alert_error_db{
+        color: #dc3545;
+      }
+    </style>
+
+</head>
+<body>
+	<div class="container" style="max-width: 1366px;">
+	<div class="row" style="margin-right: 0px;margin-left: 0px;">
+	<form style="margin-bottom: 15px;margin-left: 15px;">
+		<label for="exampleInputEmail1" class="form_top1">Seleccionar Reporte</label>
+		<select class="form-control form_top2" name="reporte" id="reporte" onchange="addvaluecsv();">
+			{% for b in lista %}
+				<option value="{{b.reporte}}">{{b.reporte}}</option>
+			{% endfor %}
+		</select>
+		<button type="button" style="margin-left: 15px;margin-top: 5px;" class="btn btn-primary btn_report" onclick="update_chart(1);">Ver Reporte</button>
+	</form>
+	<form action="/download_csv"  method="post" id="formcsv">
+		<input id="table" name="table" type="hidden">
+	  <button type="submit"  class="btn btn-warning" style="margin-top: -10px;float: left;margin-left: 25px;">Descargar CSV</button>
+	</form>
+    </div>
+	<div id="plotlyChart"></div>
+    <div style="width: 30%;float: right;margin-top: -600px;">
+    	<form>
+    	<div class="row">
+      <div class="card bg-light mb-3" style="width: 41rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 15px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Baliza en B&uacute;squeda</h5>
+          <input id="f_name_baliza2" class="form-control" type="text" name="reporte" style="width: 90%;float: left;margin-bottom: 10px;margin-right: 5px;" readonly>
+        </div>
+      </div>
+  		</div>
+  		<div class="row">
+        <div class="card bg-light mb-3" style="width: 41rem;border: 1px solid #ccc!important;padding: 1em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 5px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Nivel M&aacute;ximo Intensidad</h5>
+          <input  style="width: 100%;" type="range" min="0" max='120' value="90" step="0.1" id="nivel_amplitud2" >
+          <input class="form-control" type="number" id="currentValue" value="-90" step="0.1" style="width: 50%;">
+        </div>
+      </div>
+      <div class="card bg-light mb-3" style="width: 24rem;border: 1px solid #ccc!important;padding: 1em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 15px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Frecuencia Detectada</h5>
+		<select class="form-control" aria-label="Default select example" id="frecuencia_d2">
+		  <option value="" selected>Seleccionar</option>
+		  <option value="12_7">12.7</option>
+		  <option value="14">14</option>
+		  <option value="14_25">14.25</option>
+		  <option value="all">Todas</option>
+		</select>
+        </div>
+      </div>
+      <div class="card bg-light mb-3" style="width: 17rem;border: 1px solid #ccc!important;padding: 0.01em 16px;border-radius: 16px;float: left;margin-left: 5px;margin-top: 15px;">
+        <div class="card-body">
+          <h5 class="card-title" style="font-size:120%;">Radio Amplitud</h5>
+          <input id="radio2" class="form-control" type="number" value="2" step="0.1" style="width: 70%;float: left;margin-bottom: 10px;margin-right: 5px;" name="radio_m2"><p style="float: left;margin-top: 5px;" class="card-text"><b>dB</b></p>
+        </div>
+      </div>
+  	</div>
+  	<div class="row">
+  	<button type="button" class="btn btn-primary form_top1" onclick="update_chart(2);">Actualizar</button>
+  	</div>
+  	<div class="row" style="margin-left: 25px;">
+  	<p id="alert_error"></p>
+  	</div>
+  	</form>
+    </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Baliza Encontrada</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+          	<div class="form-group" id="data_baliza_found">
+          		
+          	</div>
+            <div class="form-group">
+              <label for="radio_distancia">Radio (Metros)</label>
+              <input id="radio_distancia" class="form-control" type="number" value="2" step="0.1" name="radio_distancia">
+            </div>
+            <div class="form-group">
+              <label for="porcentaje_m">Porcentaje Mediciones</label>
+              <input id="porcentaje_m" class="form-control" type="number" value="50" step="0.1" min="0" max="100" name="porcentaje_m">
+            </div>
+            <div class="form-group">
+              <label for="formGroupExampleInput">Ingresar Nombre Archivo</label>
+              <input type="text" class="form-control" id="formGroupExampleInput">
+            </div>
+          <div class="modal-footer">
+            <p id="alert_error_db"></p>
+			<form action="/download_csv_baliza"  method="post" id="formcsvbaliza">
+				<input id="tableb" name="tableb" type="hidden">
+				<input id="nfile" name="nfile" type="hidden">
+				<input id="freqbaliza" name="freqbaliza" type="hidden">
+				<input id="latlongb" name="latlongb" type="hidden">
+				<input id="radio_d" name="radio_d" type="hidden">
+				<input id="porcentaje" name="porcentaje" type="hidden">
+			  <button type="submit"  class="btn btn-primary" >Descargar Archivo CSV</button>
+			</form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+	<script type="text/javascript">
+		plotlyChar = document.getElementById('plotlyChart')
+		var val_reporte = document.getElementById("reporte").value;
+		document.getElementById("table").value = val_reporte;
+		function addvaluecsv() {
+			var val_reporte = document.getElementById("reporte").value;
+			document.getElementById("table").value = val_reporte;
+		}
+		function relocate_home()
+		{
+		     location.href = "/";
+		} 
+		$('#formcsv').submit(function() {
+			var val_reporte = document.getElementById("reporte").value;
+			document.getElementById("table").value = val_reporte;
+		    return true;
+		});
+		$('#nivel_amplitud2').change(function(){
+		    var val = -+($(this).val());
+		    document.getElementById("currentValue").value = val;
+		});
+		$('#formcsvbaliza').submit(function() {
+			var val_reporte = document.getElementById("reporte").value;
+			var val_file = document.getElementById("formGroupExampleInput").value;
+			var val_freq = document.getElementById("frecuencia_d2").value;
+			var val_radio = document.getElementById("radio_distancia").value;
+			var val_porcentaje = document.getElementById("porcentaje_m").value;
+			document.getElementById("tableb").value = val_reporte;
+			document.getElementById("nfile").value = val_file;
+			document.getElementById("freqbaliza").value = val_freq;
+			document.getElementById("radio_d").value = val_radio;
+			document.getElementById("porcentaje").value = val_porcentaje;
+			if (val_reporte=="" || val_file=="" || val_freq=="" || val_radio=="" || val_porcentaje=="") {
+				$("#alert_error_db").html("Debe Completar Todos los campos");
+				return false;
+			}else if(val_freq=="all"){
+				$("#alert_error_db").html("Debe Seleccionar una Frecuencia");
+			}else{
+		    	return true;
+		    }
+		});
+		var layout = {
+			title: 'Reporte',
+			autosize: true,
+			mode: 'markers',
+			type: 'scatter',
+			showlegend: false,
+			hovermode: 'closest',
+			xaxis: {
+				title: 'Latitud'
+			},
+			yaxis: {
+				title: 'Longitud'
+			}
+		};
+
+		function update_chart(opt){
+			if (opt==1) {
+				var val_reporte = document.getElementById("reporte").value;
+				$.ajax({
+					url: '/update_chart',
+					data: {reporte: val_reporte},
+					type: 'GET',
+					success: function(data){
+						console.log(data);
+						Plotly.newPlot(plotlyChar, data.data, layout);
+						$("#f_name_baliza2").val(data.get_lista[0]);
+						$("#reporte").val(data.get_lista[0]);
+						plotlyChar.on('plotly_click', function(data){
+							pts = data.points[0].text
+							$("#data_baliza_found").html(pts+"<br>Frecuencia: Recuerda seleccionar una frecuencia");
+							document.getElementById("latlongb").value = pts;
+							document.getElementById("formGroupExampleInput").value = "";
+							$("#alert_error_db").html("");
+    						$('#exampleModal').modal('show');
+					    });
+					},
+					error: function(error){
+						console.log(error);
+						Plotly.newPlot(plotlyChar, [], layout);
+					}
+				});
+			}else{
+				$("#alert_error").html("");
+				var val_reporte = document.getElementById("reporte").value;
+				var f2 = document.getElementById("frecuencia_d2").value;
+				var namp = document.getElementById("currentValue").value;
+				var radio2 = document.getElementById("radio2").value;
+				if (f2=="" || namp=="" || radio2=="") {
+					$("#alert_error").html("Debe Completar los campos: <br> Frecuencia Detectada");
+				}else{
+					$.ajax({
+						url: '/update_chart',
+						data: {reporte: val_reporte,frecuencia_m:f2,amplitud_m:namp, radio2: radio2},
+						type: 'GET',
+						success: function(data){
+							console.log(data);
+							Plotly.newPlot(plotlyChar, data.data, layout);
+							plotlyChar.on('plotly_click', function(data){
+								pts = data.points[0].text
+								$("#data_baliza_found").html(pts+"<br>Frecuencia: "+f2);
+								document.getElementById("latlongb").value = pts;
+								document.getElementById("formGroupExampleInput").value = "";
+								if (f2!="all") {
+									document.getElementById("freqbaliza").value = f2;
+								}
+								$("#alert_error_db").html("");
+	    						$('#exampleModal').modal('show');
+						    });
+						},
+						error: function(error){
+							console.log(error);
+							Plotly.newPlot(plotlyChar, [], layout);
+						}
+					});
+				}
+			}
+		}
+	</script>
+</body>
+</html>

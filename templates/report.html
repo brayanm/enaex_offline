@@ -1,0 +1,101 @@
+{% extends "bootstrap/base.html" %}
+{% block scripts %}
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js"></script>
+    <script src="static/js/inference.js"></script>
+    <script src="static/js/leaflet-realtime.js"></script>
+    <script src="static/js/trail.js"></script>
+        <script type="text/javascript">
+          // The first parameter are the coordinates of the center of the map
+          // The second parameter is the zoom level
+          var map = L.map('map').setView(["{{data[0]['Latitud']}}","{{data[0]['Longitud']}}"], 17);
+          
+          // {s}, {z}, {x} and {y} are placeholders for map tiles
+          // {x} and {y} are the x/y of where you are on the map
+          // {z} is the zoom level
+          // {s} is the subdomain of cartodb
+            var layer = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+            });
+            var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+                maxZoom: 20,
+                subdomains:['mt0','mt1','mt2','mt3']
+            });
+            var base64_icon_red = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTI7IiB4bWw6c3BhY2U9InByZXNlcnZlIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+PGc+PGc+Cgk8Zz4KCQk8cGF0aCBkPSJNMjU2LDBDMTYxLjg5NiwwLDg1LjMzMyw3Ni41NjMsODUuMzMzLDE3MC42NjdjMCwyOC4yNSw3LjA2Myw1Ni4yNiwyMC40OSw4MS4xMDRMMjQ2LjY2Nyw1MDYuNSAgICBjMS44NzUsMy4zOTYsNS40NDgsNS41LDkuMzMzLDUuNXM3LjQ1OC0yLjEwNCw5LjMzMy01LjVsMTQwLjg5Ni0yNTQuODEzYzEzLjM3NS0yNC43NiwyMC40MzgtNTIuNzcxLDIwLjQzOC04MS4wMjEgICAgQzQyNi42NjcsNzYuNTYzLDM1MC4xMDQsMCwyNTYsMHogTTI1NiwyNTZjLTQ3LjA1MiwwLTg1LjMzMy0zOC4yODEtODUuMzMzLTg1LjMzM2MwLTQ3LjA1MiwzOC4yODEtODUuMzMzLDg1LjMzMy04NS4zMzMgICAgczg1LjMzMywzOC4yODEsODUuMzMzLDg1LjMzM0MzNDEuMzMzLDIxNy43MTksMzAzLjA1MiwyNTYsMjU2LDI1NnoiIGRhdGEtb3JpZ2luYWw9IiMwMDAwMDAiIGNsYXNzPSJhY3RpdmUtcGF0aCIgZGF0YS1vbGRfY29sb3I9IiMwMDAwMDAiIHN0eWxlPSJmaWxsOiNDMTIwMjAiPjwvcGF0aD4KCTwvZz4KPC9nPjwvZz4gPC9zdmc+"
+            var base64_icon_green = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTI7IiB4bWw6c3BhY2U9InByZXNlcnZlIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+PGc+PGc+Cgk8Zz4KCQk8cGF0aCBkPSJNMjU2LDBDMTYxLjg5NiwwLDg1LjMzMyw3Ni41NjMsODUuMzMzLDE3MC42NjdjMCwyOC4yNSw3LjA2Myw1Ni4yNiwyMC40OSw4MS4xMDRMMjQ2LjY2Nyw1MDYuNSAgICBjMS44NzUsMy4zOTYsNS40NDgsNS41LDkuMzMzLDUuNXM3LjQ1OC0yLjEwNCw5LjMzMy01LjVsMTQwLjg5Ni0yNTQuODEzYzEzLjM3NS0yNC43NiwyMC40MzgtNTIuNzcxLDIwLjQzOC04MS4wMjEgICAgQzQyNi42NjcsNzYuNTYzLDM1MC4xMDQsMCwyNTYsMHogTTI1NiwyNTZjLTQ3LjA1MiwwLTg1LjMzMy0zOC4yODEtODUuMzMzLTg1LjMzM2MwLTQ3LjA1MiwzOC4yODEtODUuMzMzLDg1LjMzMy04NS4zMzMgICAgczg1LjMzMywzOC4yODEsODUuMzMzLDg1LjMzM0MzNDEuMzMzLDIxNy43MTksMzAzLjA1MiwyNTYsMjU2LDI1NnoiIGRhdGEtb3JpZ2luYWw9IiMwMDAwMDAiIGNsYXNzPSJhY3RpdmUtcGF0aCIgZGF0YS1vbGRfY29sb3I9IiMwMDAwMDAiIHN0eWxlPSJmaWxsOiM2OUU3ODEiPjwvcGF0aD4KCTwvZz4KPC9nPjwvZz4gPC9zdmc+"
+            var base64_icon_orange = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTI7IiB4bWw6c3BhY2U9InByZXNlcnZlIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+PGc+PGc+Cgk8Zz4KCQk8cGF0aCBkPSJNMjU2LDBDMTYxLjg5NiwwLDg1LjMzMyw3Ni41NjMsODUuMzMzLDE3MC42NjdjMCwyOC4yNSw3LjA2Myw1Ni4yNiwyMC40OSw4MS4xMDRMMjQ2LjY2Nyw1MDYuNSAgICBjMS44NzUsMy4zOTYsNS40NDgsNS41LDkuMzMzLDUuNXM3LjQ1OC0yLjEwNCw5LjMzMy01LjVsMTQwLjg5Ni0yNTQuODEzYzEzLjM3NS0yNC43NiwyMC40MzgtNTIuNzcxLDIwLjQzOC04MS4wMjEgICAgQzQyNi42NjcsNzYuNTYzLDM1MC4xMDQsMCwyNTYsMHogTTI1NiwyNTZjLTQ3LjA1MiwwLTg1LjMzMy0zOC4yODEtODUuMzMzLTg1LjMzM2MwLTQ3LjA1MiwzOC4yODEtODUuMzMzLDg1LjMzMy04NS4zMzMgICAgczg1LjMzMywzOC4yODEsODUuMzMzLDg1LjMzM0MzNDEuMzMzLDIxNy43MTksMzAzLjA1MiwyNTYsMjU2LDI1NnoiIGRhdGEtb3JpZ2luYWw9IiMwMDAwMDAiIGNsYXNzPSJhY3RpdmUtcGF0aCIgZGF0YS1vbGRfY29sb3I9IiMwMDAwMDAiIHN0eWxlPSJmaWxsOiNFQjdEMTYiPjwvcGF0aD4KCTwvZz4KPC9nPjwvZz4gPC9zdmc+"
+            var base64_icon_yellow = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbG5zOnN2Z2pzPSJodHRwOi8vc3ZnanMuY29tL3N2Z2pzIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgeD0iMCIgeT0iMCIgdmlld0JveD0iMCAwIDUxMiA1MTIiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTIiIHhtbDpzcGFjZT0icHJlc2VydmUiIGNsYXNzPSIiPjxnPgo8cGF0aCB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSIiIGQ9Ik0yNTYsMEMxNTYuNjk4LDAsNzYsODAuNyw3NiwxODBjMCwzMy42LDkuMzAyLDY2LjMwMSwyNy4wMDEsOTQuNTAxbDE0MC43OTcsMjMwLjQxNCAgYzIuNDAyLDMuOSw2LjAwMiw2LjMwMSwxMC4yMDMsNi45MDFjNS42OTgsMC44OTksMTIuMDAxLTEuNSwxNS4zLTcuMmwxNDEuMi0yMzIuNTE2QzQyNy4yOTksMjQ0LjUwMSw0MzYsMjEyLjQwMSw0MzYsMTgwICBDNDM2LDgwLjcsMzU1LjMwMiwwLDI1NiwweiBNMjU2LDI3MGMtNTAuMzk4LDAtOTAtNDAuOC05MC05MGMwLTQ5LjUwMSw0MC40OTktOTAsOTAtOTBzOTAsNDAuNDk5LDkwLDkwICBDMzQ2LDIyOC45LDMwNi45OTksMjcwLDI1NiwyNzB6IiBmaWxsPSIjZjdmZDAwIiBkYXRhLW9yaWdpbmFsPSIjZmQwMDNhIiBjbGFzcz0iIj48L3BhdGg+CjxwYXRoIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3R5bGU9IiIgZD0iTTI1NiwwdjkwYzQ5LjUwMSwwLDkwLDQwLjQ5OSw5MCw5MGMwLDQ4LjktMzkuMDAxLDkwLTkwLDkwdjI0MS45OTEgIGM1LjExOSwwLjExOSwxMC4zODMtMi4zMzUsMTMuMy03LjM3NUw0MTAuNSwyNzIuMWMxNi43OTktMjcuNTk5LDI1LjUtNTkuNjk5LDI1LjUtOTIuMUM0MzYsODAuNywzNTUuMzAyLDAsMjU2LDB6IiBmaWxsPSIjZjdmZDAwIiBkYXRhLW9yaWdpbmFsPSIjZTUwMDI3IiBjbGFzcz0iIj48L3BhdGg+CjxnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjwvZz4KPGcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPC9nPgo8ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8L2c+CjxnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjwvZz4KPGcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPC9nPgo8ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8L2c+CjxnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjwvZz4KPGcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPC9nPgo8ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8L2c+CjxnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjwvZz4KPGcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPC9nPgo8ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8L2c+CjxnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjwvZz4KPGcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPC9nPgo8ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8L2c+CjwvZz48L3N2Zz4="
+            var greenIcon = new L.Icon({
+              iconUrl: base64_icon_green,
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34]
+            });
+            var redIcon = new L.Icon({
+              iconUrl: base64_icon_red,
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34]
+            });
+            var orangeIcon = new L.Icon({
+              iconUrl: base64_icon_orange,
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34]
+            });
+            var yellowIcon = new L.Icon({
+              iconUrl: base64_icon_yellow,
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34]
+            });
+          //varmyMarker = L.marker([35.10418, -106.62987],{title:"MyPoint",alt:"The Big I",draggable:true}).addTo(map);
+            {% for a in data %}
+                // Create an element to hold all your text and markup
+                var container = $('<div />');
+
+                // Delegate all event handling for the container itself and its contents to the container
+                //container.on('click', '.smallPolygonLink', function() {
+                //    alert($(this).data("value1"))
+                //});
+
+                // Insert whatever you want into the container, using whichever approach you prefer
+                container.html("<strong>Latitud: </strong>{{ a['Latitud'] }}<br><strong>Longitud: </strong>{{ a['Longitud'] }}<br><strong>Medición: </strong>{{ a['Medicion'] }}<br>");
+                L.marker(["{{ a['Latitud'] }}", "{{ a['Longitud'] }}"], {icon: redIcon}).addTo(map).bindPopup(container[0]) ;
+            {% endfor %}
+          // Now add the layer onto the map
+          map.addLayer(googleSat);
+        </script>
+{{super()}}
+{% endblock %}
+{% block title %}OWT Enaex{% endblock %}
+
+
+{% include "layout.html" %}
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-success alert-dismissible">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+{% block content %}
+<div class="content">
+<h2 style="padding: 15px 0;">Reporte B&uacute;squeda de Balizas
+</h2>
+    {% if namedb %}
+      <p>{{ namedb }}</p>
+    {% endif %}
+    <p>Seleccionar Reporte</p>
+    <select>
+      {% for a in tablas %}
+        <option>{{a}}</option>
+      {% endfor %}
+    </select>
+    <div id="map" style="height: 600px;width:1200px;"></div>
+</div>
+{% endblock %}

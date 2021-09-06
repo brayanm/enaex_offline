@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Informe PDF</title>
+  <link href="{{ url_for('static', filename='css/tables.css', _external=True) }}" rel="stylesheet" >
+  <link href="{{ url_for('static', filename='css/stylepdf.css', _external=True) }}" rel="stylesheet" >
+  <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+</head>
+<body>
+  <h1>Reporte Fallas Celdas Fotovoltaicas</h1>
+  <h2>Planta Tricahue</h2> 
+
+  <p class="titulo-text"> A continuacion se listan las fallas detectadas por el sistema de reconocimiento de fallas autom&aacute;tico</p>
+  <table class="pure-table">
+    <thead>
+      <tr>
+        <td>ID</td>
+        <td>Tipo Falla</td>
+        <td>Latitud</td>
+        <td>Longitud</td>
+        <td>Probabilidad</td>
+        <td>Imagen</td>
+        
+      </tr>
+    </thead>
+    <tbody>
+      {% for falla in fallas %}
+
+      {% if loop.index is divisibleby 2 %}
+      <tr class="pure-table-odd">
+      {% else %}
+      <tr class=""> 
+      {% endif %}  
+        <td>{{ loop.index }}</td>
+        <td>{{ falla.0 }}</td>
+        <td>{{ falla.1 }}</td>
+        <td>{{ falla.2 }}</td>
+        <td>{{ falla.3 }}%</td>
+        {% set x = "D:/Imagenes DJI Planta Fotovoltaica/web_app/static/" ~ falla.4 ~ "/" ~ falla.5 %}
+        <td><img src="{{x}}" height="40" width="40" /></td>
+      </tr>
+      {% endfor %}  
+    </tbody>    
+  </table>
+
+
+  {% for falla_page in fallas %}
+  <div id="mail1" class="pb">&nbsp;</div>
+  <h1>Detalle Falla {{ loop.index }}</h1>
+  <table class="tabla_grande pure-table" style="border: 0px solid #cbcbcb;">
+    <tbody>
+      <tr class="pure-table-odd">
+        <td class="titulo-text">Tipo Falla</td>
+        <td>{{ falla_page.0 }}</td>
+      </tr>
+      <tr>
+        <td class="titulo-text"> Latitud</td>
+        <td>{{ falla_page.1}}</td>
+      </tr>
+      <tr class="pure-table-odd">  
+        <td class="titulo-text">Longitud</td>
+        <td>{{ falla_page.2 }}</td>
+      </tr>
+      <tr>  
+        <td class="titulo-text">Probabilidad</td>
+        <td>{{ falla_page.3 }}%</td>
+      </tr>
+      <tr class="pure-table-odd">  
+        <td class="titulo-text">Imagen</td>
+        {% set x = "D:/Imagenes DJI Planta Fotovoltaica/web_app/static/" ~ falla_page.4 ~ "/" ~ falla_page.5 %}
+        <td><img src="{{x}}" /></td>
+      </tr>
+      <tr style="width: 500px;height: 400px;">  
+        <td class="titulo-text">Ubicacion</td>
+        <td style="width: 500px;height: 400px;">
+<div id="map{{ loop.index }}" style="width: 500px;height: 400px;">
+            <script type="text/javascript">
+      window['p{{ loop.index }}'] = L.map("map{{ loop.index }}").setView(
+                [-34.35864813888889,-70.82489097222222], 10);
+      window['l{{ loop.index }}'] = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+          maxZoom: 20,
+          subdomains:['mt0','mt1','mt2','mt3']
+      });      
+      window['p{{ loop.index }}'].addLayer(window['l{{ loop.index }}']);
+  </script>
+</div>
+        </td>
+      </tr>  
+    </tbody>    
+  </table>
+  {% endfor %}  
+</body>
+</html>

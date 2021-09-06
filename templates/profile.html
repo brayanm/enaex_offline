@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+{% block title %}Perfil{% endblock %}
+
+{% block content %}
+<h2>Perfil de Usuario</h2>
+<div>
+    <p>Los detalles de su cuenta:</p>
+    <table>
+        <tr>
+            <td>Usuario:</td>
+            <td>{{ account['username'] }}</td>
+        </tr>
+        <tr>
+            <td>Contraseña:</td>
+            <td>{{ account['password'] }}</td>
+        </tr>
+        <tr>
+            <td>Email:</td>
+            <td>{{ account['email'] }}</td>
+        </tr>
+    </table>
+</div>
+{% endblock %}
