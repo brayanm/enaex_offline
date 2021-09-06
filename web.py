@@ -46,8 +46,8 @@ app.secret_key = 'ckpZQrmDFXXEkIfRYh3nxVa61ycYdoP6'
 #app.config['MYSQL_USER'] = 'root'
 #app.config['MYSQL_PASSWORD'] = ''
 #app.config['MYSQL_DB'] = 'enaex3'
-#engine = create_engine('sqlite:///C:/Users/Dronia/Documents/enaex_bobina/db/enaex.db')
-engine = create_engine('sqlite:///D:/dronekit/dronia/db/enaex.db')
+engine = create_engine('sqlite:///C:/Users/Dronia/Documents/enaex_bobina/db/enaex.db')
+#engine = create_engine('sqlite:///D:/dronekit/dronia/db/enaex.db')
 
 # Intialize MySQL
 #mysql = MySQL(app)
